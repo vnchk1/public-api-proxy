@@ -9,9 +9,13 @@ import (
 )
 
 func main() {
-	httpClient := client.NewHTTPClient(&http.Client{
+	httpClient, err := client.NewHTTPClient(&http.Client{
 		Timeout: 10 * time.Second,
 	})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	ctx := context.Background()
 

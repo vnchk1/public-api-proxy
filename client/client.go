@@ -13,7 +13,9 @@ import (
 )
 
 const (
-	defaultBaseURL = "https://jsonplaceholder.typicode.com/"
+	defaultBaseURL    = "https://jsonplaceholder.typicode.com/"
+	lowerSuccessCode  = 200
+	higherSuccessCode = 299
 )
 
 type Post struct {
@@ -27,21 +29,21 @@ type HTTPClient struct {
 	BaseURL *url.URL
 }
 
-func NewHTTPClient(baseClient *http.Client) *HTTPClient {
+func NewHTTPClient(baseClient *http.Client) (*HTTPClient, error) {
 	if baseClient == nil {
-		baseClient = &http.Client{}
+		return nil, errors.New("baseClient is nil")
 	}
 	baseURL, _ := url.Parse(defaultBaseURL)
+	if !strings.HasSuffix(baseURL.String(), "/") {
+		return nil, errors.New("URL must have a trailing slash")
+	}
 	return &HTTPClient{
 		client:  baseClient,
 		BaseURL: baseURL,
-	}
+	}, nil
 }
 
 func (c *HTTPClient) NewRequest(method, urlStr string, body any) (*http.Request, error) {
-	if !strings.HasSuffix(c.BaseURL.Path, "/") {
-		return nil, fmt.Errorf("BaseURL must have a trailing slash, but %v does not", c.BaseURL)
-	}
 
 	u, err := c.BaseURL.Parse(urlStr)
 	if err != nil {
@@ -53,7 +55,7 @@ func (c *HTTPClient) NewRequest(method, urlStr string, body any) (*http.Request,
 		buf = &bytes.Buffer{}
 		err := json.NewEncoder(buf).Encode(body)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error encoding request body: %v", err)
 		}
 	}
 
@@ -69,7 +71,7 @@ func (c *HTTPClient) NewRequest(method, urlStr string, body any) (*http.Request,
 	return req, nil
 }
 
-func (c *HTTPClient) Do(ctx context.Context, req *http.Request, v any) (*http.Response, error) {
+func (c *HTTPClient) Do(ctx context.Context, req *http.Request) (*http.Response, error) {
 	if ctx == nil {
 		return nil, errors.New("context must be non-nil")
 	}
@@ -78,40 +80,16 @@ func (c *HTTPClient) Do(ctx context.Context, req *http.Request, v any) (*http.Re
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		default:
-		}
-
-		return nil, err
+		return nil, fmt.Errorf("error sending request: %v", err)
 	}
-	defer resp.Body.Close()
 
 	err = CheckResponse(resp)
-	if err != nil {
-		return resp, err
-	}
-
-	switch v := v.(type) {
-	case nil:
-	case io.Writer:
-		_, err = io.Copy(v, resp.Body)
-	default:
-		decErr := json.NewDecoder(resp.Body).Decode(v)
-		if decErr == io.EOF {
-			decErr = nil
-		}
-		if decErr != nil {
-			err = decErr
-		}
-	}
 
 	return resp, err
 }
 
 func CheckResponse(resp *http.Response) error {
-	if c := resp.StatusCode; 200 <= c && c <= 299 {
+	if c := resp.StatusCode; lowerSuccessCode <= c && c <= higherSuccessCode {
 		return nil
 	}
 
@@ -119,20 +97,27 @@ func CheckResponse(resp *http.Response) error {
 }
 
 func (c *HTTPClient) GetPost(ctx context.Context, id int64) (*Post, *http.Response, error) {
-	u := fmt.Sprintf("posts/%v", id)
+	idEndpoint := fmt.Sprintf("posts/%v", id)
 
-	req, err := c.NewRequest(http.MethodGet, u, nil)
+	req, err := c.NewRequest(http.MethodGet, idEndpoint, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	structPost := new(Post)
-	resp, err := c.Do(ctx, req, structPost)
+	resp, err := c.Do(ctx, req)
 	if err != nil {
 		return nil, nil, err
 	}
 	defer resp.Body.Close()
 
+	err = json.NewDecoder(resp.Body).Decode(structPost)
+	if err == io.EOF {
+		err = nil
+	}
+	if err != nil {
+		return nil, nil, err
+	}
 	return structPost, resp, nil
 
 }
