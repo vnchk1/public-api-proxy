@@ -7,15 +7,18 @@ import (
 	"time"
 )
 
-func NewRestyClient(baseURL string, timeout time.Duration) *resty.Client {
+func NewRestyClient(baseUrl string) *resty.Client {
 	client := resty.New()
-	client.SetBaseURL(baseURL).
-		SetTimeout(timeout).
-		SetHeader("Content-Type", "application/json")
+	client.SetBaseURL(baseUrl).
+		SetTimeout(5*time.Second).
+		SetHeader("Content-Type", "application/json").
+		SetRetryCount(3).
+		SetRetryWaitTime(2 * time.Second).
+		SetRetryMaxWaitTime(10 * time.Second)
 	return client
 }
 
-func GetPostsRequest(client *resty.Client, id int) (*models.Post, error) {
+func GetPostsRequest(client *resty.Client, id string) (*models.Post, error) {
 	var Post *models.Post
 	postPath := fmt.Sprintf("posts/%v", id)
 	resp, err := client.R().SetResult(&Post).Get(postPath)

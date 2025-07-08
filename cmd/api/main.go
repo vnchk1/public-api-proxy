@@ -3,17 +3,19 @@ package main
 import (
 	"fmt"
 	"github.com/vnchk1/public-api-proxy/client"
-	"time"
+	"github.com/vnchk1/public-api-proxy/configs"
+	"log"
 )
 
 func main() {
-	baseURL := "https://jsonplaceholder.typicode.com/"
-	timeout := 5 * time.Second
-	postId := 1
+	cfg, err := configs.LoadConfig(".yml")
+	if err != nil {
+		log.Fatalf("failed to load config: %v", err)
+	}
 	//инициализация клиента
-	currentClient := client.NewRestyClient(baseURL, timeout)
+	newClient := client.NewRestyClient(cfg.BaseUrl)
 	//запрос
-	post, err := client.GetPostsRequest(currentClient, postId)
+	post, err := client.GetPostsRequest(newClient, cfg.PostId)
 	if err != nil {
 		fmt.Println(err)
 		return
