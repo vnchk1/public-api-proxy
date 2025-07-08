@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -29,11 +28,14 @@ type HTTPClient struct {
 
 func NewHTTPClient(baseClient *http.Client) (*HTTPClient, error) {
 	if baseClient == nil {
-		return nil, errors.New("baseClient is nil")
+		return nil, fmt.Errorf("baseClient is nil")
 	}
-	baseURL, _ := url.Parse(defaultBaseURL)
+	baseURL, err := url.Parse(defaultBaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("parsing URL error: %v", err)
+	}
 	if !strings.HasSuffix(baseURL.String(), "/") {
-		return nil, errors.New("URL must have a trailing slash")
+		return nil, fmt.Errorf("URL must have a trailing slash %v", baseURL.String())
 	}
 	return &HTTPClient{
 		client:  baseClient,
@@ -71,7 +73,7 @@ func (c *HTTPClient) NewRequest(method, urlStr string, body any) (*http.Request,
 
 func (c *HTTPClient) Do(ctx context.Context, req *http.Request) (*http.Response, error) {
 	if ctx == nil {
-		return nil, errors.New("context must be non-nil")
+		return nil, fmt.Errorf("context must be non-nil")
 	}
 
 	req = req.WithContext(ctx)
