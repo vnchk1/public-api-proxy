@@ -13,9 +13,7 @@ import (
 )
 
 const (
-	defaultBaseURL    = "https://jsonplaceholder.typicode.com/"
-	lowerSuccessCode  = 200
-	higherSuccessCode = 299
+	defaultBaseURL = "https://jsonplaceholder.typicode.com/"
 )
 
 type Post struct {
@@ -45,7 +43,7 @@ func NewHTTPClient(baseClient *http.Client) (*HTTPClient, error) {
 
 func (c *HTTPClient) NewRequest(method, urlStr string, body any) (*http.Request, error) {
 
-	u, err := c.BaseURL.Parse(urlStr)
+	reqUrl, err := c.BaseURL.Parse(urlStr)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +57,7 @@ func (c *HTTPClient) NewRequest(method, urlStr string, body any) (*http.Request,
 		}
 	}
 
-	req, err := http.NewRequest(method, u.String(), buf)
+	req, err := http.NewRequest(method, reqUrl.String(), buf)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +87,7 @@ func (c *HTTPClient) Do(ctx context.Context, req *http.Request) (*http.Response,
 }
 
 func CheckResponse(resp *http.Response) error {
-	if c := resp.StatusCode; lowerSuccessCode <= c && c <= higherSuccessCode {
+	if c := resp.StatusCode; http.StatusOK <= c && c <= http.StatusIMUsed {
 		return nil
 	}
 
