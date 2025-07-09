@@ -2,13 +2,23 @@ package main
 
 import (
 	"fmt"
+	"github.com/joho/godotenv"
 	"github.com/vnchk1/public-api-proxy/client"
 	"github.com/vnchk1/public-api-proxy/configs"
 	"log"
+	"os"
 )
 
 func main() {
-	cfg, err := configs.LoadConfig(".yml")
+	envErr := godotenv.Load()
+	if envErr != nil {
+		log.Fatalf("failed to load .env file")
+	}
+	cfgPath := os.Getenv("CONFIG_PATH")
+	if cfgPath == "" {
+		log.Fatal("CONFIG_PATH environment variable not set")
+	}
+	cfg, err := configs.LoadConfig(cfgPath)
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
@@ -17,8 +27,7 @@ func main() {
 	//запрос
 	post, err := client.GetPostsRequest(newClient, cfg.PostId)
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatalf("failed to get posts: %v", err)
 	}
 
 	fmt.Printf("Post: %v\n", post.ID)

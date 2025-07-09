@@ -2,7 +2,6 @@ package configs
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 	"os"
 )
@@ -13,11 +12,7 @@ type Configs struct {
 }
 
 func LoadConfig(path string) (*Configs, error) {
-	if err := godotenv.Load(); err != nil {
-		return nil, fmt.Errorf("failed to load .env file")
-	}
 	config := &Configs{}
-
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)

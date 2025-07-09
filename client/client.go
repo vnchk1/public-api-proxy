@@ -7,14 +7,21 @@ import (
 	"time"
 )
 
+const (
+	Timeout          = 5
+	RetryCount       = 3
+	RetryWaitTime    = 2
+	RetryMaxWaitTime = 10
+)
+
 func NewRestyClient(baseUrl string) *resty.Client {
 	client := resty.New()
 	client.SetBaseURL(baseUrl).
-		SetTimeout(5*time.Second).
+		SetTimeout(Timeout*time.Second).
 		SetHeader("Content-Type", "application/json").
-		SetRetryCount(3).
-		SetRetryWaitTime(2 * time.Second).
-		SetRetryMaxWaitTime(10 * time.Second)
+		SetRetryCount(RetryCount).
+		SetRetryWaitTime(RetryWaitTime * time.Second).
+		SetRetryMaxWaitTime(RetryMaxWaitTime * time.Second)
 	return client
 }
 
