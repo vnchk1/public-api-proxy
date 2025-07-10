@@ -4,30 +4,22 @@ import (
 	"context"
 	"fmt"
 	"github.com/vnchk1/public-api-proxy/client"
-	"net/http"
-	"time"
+	"log"
 )
 
+const PostId = 1
+
 func main() {
-	httpClient, err := client.NewHTTPClient(&http.Client{
-		Timeout: 10 * time.Second,
-	})
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
 
 	ctx := context.Background()
 
-	Post, _, err := httpClient.GetPost(ctx, 1)
+	postResp, err := client.GetPost(ctx, PostId)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		log.Fatalf("Getting posts/ error:%v", err)
 	}
 
-	fmt.Println("Post:")
-	fmt.Printf("ID: %v\n", Post.ID)
-	fmt.Printf("Title: %v\n", Post.Title)
-	fmt.Printf("Body: %v\n", Post.Body)
-	fmt.Printf("User ID: %v\n", Post.UserID)
+	fmt.Printf("Post ID: %v\n", postResp.ID)
+	fmt.Printf("Title: %v\n", postResp.Title)
+	fmt.Printf("Body: %v\n", postResp.Body)
+	fmt.Printf("User ID: %v\n", postResp.UserID)
 }
