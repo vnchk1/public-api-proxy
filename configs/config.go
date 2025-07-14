@@ -7,8 +7,9 @@ import (
 )
 
 type Configs struct {
-	BaseUrl string `yaml:"base_url"`
-	PostId  string `yaml:"post_id"`
+	BaseUrl  string `yaml:"base_url"`
+	PostId   string `yaml:"post_id"`
+	LogLevel string `yaml:"log_level"`
 }
 
 func LoadConfig(path string) (*Configs, error) {
@@ -28,6 +29,9 @@ func LoadConfig(path string) (*Configs, error) {
 	}
 	if envPostId := os.Getenv("POST_ID"); envPostId != "" {
 		config.PostId = envPostId
+	}
+	if envLogLevel := os.Getenv("LOG_LEVEL"); envLogLevel != "" {
+		config.LogLevel = envLogLevel
 	}
 
 	return config, nil
