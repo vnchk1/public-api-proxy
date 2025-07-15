@@ -1,18 +1,17 @@
 package main
 
 import (
-	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/vnchk1/public-api-proxy/client"
 	"github.com/vnchk1/public-api-proxy/configs"
+	"github.com/vnchk1/public-api-proxy/logging"
 	"log"
 	"os"
 )
 
 func main() {
-	envErr := godotenv.Load()
-
-	if envErr != nil {
+	err := godotenv.Load()
+	if err != nil {
 		log.Fatalf("failed to load .env file")
 	}
 
@@ -26,6 +25,7 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
+	logger := logging.NewLogger(cfg.LogLevel)
 	//инициализация клиента
 	newClient := client.NewRestyClient(cfg)
 	//запрос
@@ -34,8 +34,9 @@ func main() {
 		log.Fatalf("failed to get posts: %v", err)
 	}
 
-	fmt.Printf("Post: %v\n", post.ID)
-	fmt.Printf("Title: %v\n", post.Title)
-	fmt.Printf("Body: %v\n", post.Body)
-	fmt.Printf("UserID: %v\n", post.UserID)
+	logger.Info("response result",
+		"Post ID", post.ID,
+		"Title", post.Title,
+		"Body", post.Body,
+		"User ID", post.UserID)
 }

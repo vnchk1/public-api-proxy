@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	Timeout          = 5
+	TimeoutSeconds   = 5
 	RetryCount       = 3
 	RetryWaitTime    = 2
 	RetryMaxWaitTime = 10
@@ -19,7 +19,7 @@ const (
 func NewRestyClient(cfg *configs.Configs) *resty.Client {
 	client := resty.New()
 	client.SetBaseURL(cfg.BaseUrl).
-		SetTimeout(Timeout*time.Second).
+		SetTimeout(TimeoutSeconds*time.Second).
 		SetHeader("Content-Type", "application/json").
 		SetRetryCount(RetryCount).
 		SetRetryWaitTime(RetryWaitTime * time.Second).
@@ -48,5 +48,6 @@ func GetPostsRequest(client *resty.Client, id string) (post *models.Post, err er
 	if resp.IsError() {
 		return nil, fmt.Errorf("API error: %v %v", resp.Error(), resp.StatusCode())
 	}
+
 	return
 }
