@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/joho/godotenv"
-	"github.com/vnchk1/public-api-proxy/client"
-	"github.com/vnchk1/public-api-proxy/configs"
-	"github.com/vnchk1/public-api-proxy/logging"
+	"github.com/vnchk1/public-api-proxy/internal/client"
+	"github.com/vnchk1/public-api-proxy/internal/config"
+	"github.com/vnchk1/public-api-proxy/internal/logging"
 	"log"
 	"os"
 )
@@ -20,14 +20,14 @@ func main() {
 		log.Fatal("CONFIG_PATH environment variable not set")
 	}
 
-	cfg, err := configs.LoadConfig(cfgPath)
+	cfg, err := config.LoadConfig(cfgPath)
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
 	logger := logging.NewLogger(cfg.LogLevel)
 	//инициализация клиента
-	newClient := client.NewRestyClient(cfg)
+	newClient := client.NewRestyClient(cfg, logger)
 	//запрос
 	post, err := client.GetPostsRequest(newClient, cfg.PostId)
 	if err != nil {

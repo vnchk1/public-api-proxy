@@ -1,4 +1,4 @@
-package configs
+package config
 
 import (
 	"fmt"
@@ -6,14 +6,14 @@ import (
 	"os"
 )
 
-type Configs struct {
+type Config struct {
 	BaseUrl  string `yaml:"base_url"`
 	PostId   string `yaml:"post_id"`
 	LogLevel string `yaml:"log_level"`
 }
 
-func LoadConfig(path string) (*Configs, error) {
-	config := &Configs{}
+func LoadConfig(path string) (config *Config, err error) {
+	config = &Config{}
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
@@ -34,5 +34,5 @@ func LoadConfig(path string) (*Configs, error) {
 		config.LogLevel = envLogLevel
 	}
 
-	return config, nil
+	return
 }

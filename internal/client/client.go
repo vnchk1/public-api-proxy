@@ -3,9 +3,8 @@ package client
 import (
 	"fmt"
 	"github.com/go-resty/resty/v2"
-	"github.com/vnchk1/public-api-proxy/configs"
-	"github.com/vnchk1/public-api-proxy/internal/models"
-	"github.com/vnchk1/public-api-proxy/logging"
+	"github.com/vnchk1/public-api-proxy/internal/config"
+	"log/slog"
 	"time"
 )
 
@@ -16,8 +15,8 @@ const (
 	RetryMaxWaitTime = 10
 )
 
-func NewRestyClient(cfg *configs.Configs) *resty.Client {
-	client := resty.New()
+func NewRestyClient(cfg *config.Config, logger *slog.Logger) (client *resty.Client) {
+	client = resty.New()
 	client.SetBaseURL(cfg.BaseUrl).
 		SetTimeout(TimeoutSeconds*time.Second).
 		SetHeader("Content-Type", "application/json").
@@ -25,7 +24,6 @@ func NewRestyClient(cfg *configs.Configs) *resty.Client {
 		SetRetryWaitTime(RetryWaitTime * time.Second).
 		SetRetryMaxWaitTime(RetryMaxWaitTime * time.Second)
 
-	logger := logging.NewLogger(cfg.LogLevel)
 	client.OnAfterResponse(func(c *resty.Client, resp *resty.Response) error {
 		logger.Info("response received",
 			"status code", resp.StatusCode(),
@@ -34,10 +32,10 @@ func NewRestyClient(cfg *configs.Configs) *resty.Client {
 			"time", resp.Request.Time)
 		return nil
 	})
-	return client
+	return
 }
 
-func GetPostsRequest(client *resty.Client, id string) (post *models.Post, err error) {
+func GetPostsRequest(client *resty.Client, id string) (post *Post, err error) {
 	postPath := fmt.Sprintf("posts/%v", id)
 	resp, err := client.R().SetResult(&post).Get(postPath)
 
