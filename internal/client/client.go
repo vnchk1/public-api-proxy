@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	TimeoutSeconds   = 5
-	RetryCount       = 3
-	RetryWaitTime    = 2
-	RetryMaxWaitTime = 10
+	TimeoutSeconds          = 5
+	RetryCount              = 3
+	RetryWaitTimeSeconds    = 2
+	RetryMaxWaitTimeSeconds = 10
 )
 
 func NewRestyClient(cfg *config.Config, logger *slog.Logger) (client *resty.Client) {
@@ -21,8 +21,8 @@ func NewRestyClient(cfg *config.Config, logger *slog.Logger) (client *resty.Clie
 		SetTimeout(TimeoutSeconds*time.Second).
 		SetHeader("Content-Type", "application/json").
 		SetRetryCount(RetryCount).
-		SetRetryWaitTime(RetryWaitTime * time.Second).
-		SetRetryMaxWaitTime(RetryMaxWaitTime * time.Second)
+		SetRetryWaitTime(RetryWaitTimeSeconds * time.Second).
+		SetRetryMaxWaitTime(RetryMaxWaitTimeSeconds * time.Second)
 
 	client.OnAfterResponse(func(c *resty.Client, resp *resty.Response) error {
 		logger.Info("response received",
